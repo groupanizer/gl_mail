@@ -1,0 +1,194 @@
+<?php
+
+  module_load_include('inc', 'gb_mail', 'gb_mail.template');
+  
+  /**
+   * gb_maillist will look for the following:
+   * 
+   * a class named EmailMimeEmail that implements IMultipartMimeEmail
+   * 
+   * a class named EmailDispatcher that implements IEmailDispatcher
+   * 
+   * a class named EmailNotifier that implements IEmailNotifier
+   * 
+   * internal email implementation is irrelevant to gb_maillist
+   * 
+   * 
+   * This implementation uses drupal's built in mail functionality which
+   * is an extension on PHP's mail() and the contrib modules
+   * MimeMail and Emogrifier.
+   */
+  
+  class EmailMimeEmail implements IMultipartMimeEmail {
+    protected $key, $body, $headers, $attachments, $plain, $alt_body;
+    public $to, $from, $subject, $reply_to;
+    
+    public function set_paths($to, $from, $reply_to) {
+      $this->to = $to;
+      $this->from = $from;
+      $this->reply_to = $reply_to;
+    }
+        
+    public function set_subject($subject) {
+      $this->subject = $subject;
+    }
+    
+    public function set_main_body($body, $plain) {
+      $this->plain = $plain;
+      $this->body[] = $body;
+    }
+    
+    public function set_alt_body($alt_body) {
+      $this->alt_body = $alt_body;
+    }
+    
+    public function add_additional_body($body) {
+      $this->body[] = $body;
+    }
+    
+    public function add_header($header, $value) {
+      $this->headers[$header] = $value;
+    }
+
+    public function add_attachment($filename, $filemime) {
+      if (!is_readable($filename)) {
+        throw new Exception("file {$path} is not accessable / readable");
+      }
+      
+      $this->attachments[] = array(
+        'filecontent' => file_get_contents($filename),
+        'filename' => basename($filename),
+        'filemime' => $filemime,
+      );
+    }
+    
+    public function __get($property) {
+      if (property_exists($this, $property)) {
+        return $this->{$property};
+      }
+    }
+    
+    public function __isset($property) {
+      if (property_exists($this, $property)) {
+        return isset($this->{$property});
+      }
+    }
+    
+    public function __construct() {
+      $this->key = md5(microtime());
+    }
+    
+    public function get_headers() {
+      return $this->headers;
+    }
+  }
+
+  /**
+   * Implements hook_mail()
+   */
+  function gb_mail_mail($key, &$message, $params) {
+    $objects = $params['objects'];
+    if (!empty($objects)) { // This is an e-mail we're dispatching
+      $dispatcher = $objects['dispatcher'];
+      $email = $objects['email'];
+      
+      // Set some addtional headers
+      $message['params']['headers']['Sender'] = $dispatcher->sender; 
+      $message['params']['headers']['Return-Path'] = $dispatcher->bounces;
+      $message['params']['headers']['Errors-To'] = $dispatcher->bounces;
+      $message['params']['headers']['Reply-To'] = $email->reply_to;
+      
+      if (!empty($email->headers)) {
+        $message['params']['headers'] = array_merge(
+            $message['params']['headers'], $email->headers);
+      }
+      
+      // Is this message plaintext only?
+      if ($email->plain) {
+        $message['params']['plain'] = TRUE;
+      }
+      
+      // If set provide an alternative plaintext body
+      if (!is_null($email->alt_body) && !$email->plain) {
+        // plaintext body seems to override message['body'] if we're
+        // sending a plain text email (message['params']['plaintext'])
+        $message['params']['plaintext'] = $email->alt_body;
+      }
+      
+      // If set provide our array of attachment descriptors
+      if (!is_null($email->attachments)) {
+        $message['params']['attachments'] = $email->attachments;
+      }
+      
+      // Set email subect & body
+      $message['body'] = $email->body;
+      $message['subject'] = $email->subject;
+      $message['send'] = TRUE;
+    }
+  }
+
+  /**
+   * Implements hook_mail_alter()
+   */
+  function gb_maill_mail_alter(&$message) {
+    //$message['send'] = FALSE;
+  }
+
+  /**
+   * Interface to dispatch (send) email.
+   * 
+   * To be implementing by the mailing engine.
+   * 
+   * @api
+   */
+  class EmailDispatcher implements IEmailDispatcher {
+    public $sender, $bounces;
+    
+    public function __construct($sender, $bounces) {
+      $this->sender = $sender;
+      $this->bounces = $bounces;
+    }
+    /**
+     * This method dispatches an email.
+     * 
+     * @param IEmail $email the email to dispatch
+     * 
+     * @return boolean
+     */
+    public function dispatch(IEmail $email) {
+      $params = array();
+      $params['headers'] = array();
+      $params['objects'] = array('email' => $email, 'dispatcher' => $this);
+      $lang = language_default();
+      $result = drupal_mail('gb_maillist', $email->key, $email->to, $lang, 
+          $params, $email->from);
+      return $result['result'];
+    }
+    
+    /**
+     * This method dispatches a batch (array) of emails.
+     * 
+     * @param array $emails an array of IEmail objects to dispatch.
+     * 
+     * @return an array of booleans
+     */
+    public function dispatch_batch(array $emails) {
+      return array_map(function ($email) {
+        return self::dispatch($email);
+      }, $emails);
+    }
+  }
+  
+  /**
+   * Intrerface to receive email
+   * 
+   * To be implemented by the mailing engine.
+   * 
+   * @api
+   */
+  class EmailNotifier implements IEmailNotifier {
+    public function register_for_push_notifications(
+        $routine, $params){}
+  }
+  
+  

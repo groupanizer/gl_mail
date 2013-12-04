@@ -1,0 +1,23 @@
+<?php
+  
+/**
+ * Implements hook_enable().
+ */
+function gb_mail_enable() {
+  // Set variables for MimeMail
+  variable_set('mimemail_simple_address', TRUE);
+  variable_set('mimemail_sitestyle', TRUE);
+  variable_set('mimemail_textonly', FALSE);
+  variable_set('mimemail_format', 'filtered_html');
+  variable_set('mimemail_linkonly', 0);
+  
+  // Set the MailSystem for gb_mailllist
+  mailsystem_set(array('gb_mail' => 'MimeMailSystem'));
+}
+
+/**
+ * Implements hook_disable().
+ */
+function gb_mail_disable() {
+  mailsystem_clear(array('gb_mail' => 'MimeMailSystem'));
+}
