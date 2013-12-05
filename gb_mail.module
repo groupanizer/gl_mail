@@ -84,6 +84,63 @@
   }
 
   /**
+   * Interface to dispatch (send) email.
+   * 
+   * To be implementing by the mailing engine.
+   * 
+   * @api
+   */
+  class EmailDispatcher implements IEmailDispatcher {
+    public $sender, $bounces;
+    
+    public function __construct($sender, $bounces) {
+      $this->sender = $sender;
+      $this->bounces = $bounces;
+    }
+    /**
+     * This method dispatches an email.
+     * 
+     * @param IEmail $email the email to dispatch
+     * 
+     * @return boolean
+     */
+    public function dispatch(IEmail $email) {
+      $params = array();
+      $params['headers'] = array();
+      $params['objects'] = array('email' => $email, 'dispatcher' => $this);
+      $lang = language_default();
+      $result = drupal_mail('gb_mail', $email->key, $email->to, $lang, 
+          $params, $email->from);
+      return $result['result'];
+    }
+    
+    /**
+     * This method dispatches a batch (array) of emails.
+     * 
+     * @param array $emails an array of IEmail objects to dispatch.
+     * 
+     * @return an array of booleans
+     */
+    public function dispatch_batch(array $emails) {
+      return array_map(function ($email) {
+        return self::dispatch($email);
+      }, $emails);
+    }
+  }
+  
+  /**
+   * Intrerface to receive email
+   * 
+   * To be implemented by the mailing engine.
+   * 
+   * @api
+   */
+  class EmailNotifier implements IEmailNotifier {
+    public function register_for_push_notifications(
+        $routine, $params){}
+  }
+  
+  /**
    * Implements hook_mail()
    */
   function gb_mail_mail($key, &$message, $params) {
@@ -133,62 +190,6 @@
   function gb_maill_mail_alter(&$message) {
     //$message['send'] = FALSE;
   }
-
-  /**
-   * Interface to dispatch (send) email.
-   * 
-   * To be implementing by the mailing engine.
-   * 
-   * @api
-   */
-  class EmailDispatcher implements IEmailDispatcher {
-    public $sender, $bounces;
-    
-    public function __construct($sender, $bounces) {
-      $this->sender = $sender;
-      $this->bounces = $bounces;
-    }
-    /**
-     * This method dispatches an email.
-     * 
-     * @param IEmail $email the email to dispatch
-     * 
-     * @return boolean
-     */
-    public function dispatch(IEmail $email) {
-      $params = array();
-      $params['headers'] = array();
-      $params['objects'] = array('email' => $email, 'dispatcher' => $this);
-      $lang = language_default();
-      $result = drupal_mail('gb_maillist', $email->key, $email->to, $lang, 
-          $params, $email->from);
-      return $result['result'];
-    }
-    
-    /**
-     * This method dispatches a batch (array) of emails.
-     * 
-     * @param array $emails an array of IEmail objects to dispatch.
-     * 
-     * @return an array of booleans
-     */
-    public function dispatch_batch(array $emails) {
-      return array_map(function ($email) {
-        return self::dispatch($email);
-      }, $emails);
-    }
-  }
   
-  /**
-   * Intrerface to receive email
-   * 
-   * To be implemented by the mailing engine.
-   * 
-   * @api
-   */
-  class EmailNotifier implements IEmailNotifier {
-    public function register_for_push_notifications(
-        $routine, $params){}
-  }
   
   
