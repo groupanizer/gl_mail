@@ -3,7 +3,7 @@
 /**
  * Implements hook_enable().
  */
-function gb_mail_enable() {
+function gl_mail_enable() {
   // Set variables for MimeMail
   variable_set('mimemail_simple_address', TRUE);
   variable_set('mimemail_sitestyle', TRUE);
@@ -12,12 +12,12 @@ function gb_mail_enable() {
   variable_set('mimemail_linkonly', 0);
   
   // Set the MailSystem for gb_mailllist
-  mailsystem_set(array('gb_mail' => 'MimeMailSystem'));
+  mailsystem_set(array('gl_mail' => 'MimeMailSystem'));
 }
 
 /**
  * Implements hook_disable().
  */
-function gb_mail_disable() {
-  mailsystem_clear(array('gb_mail' => 'MimeMailSystem'));
+function gl_mail_disable() {
+  mailsystem_clear(array('gl_mail' => 'MimeMailSystem'));
 }

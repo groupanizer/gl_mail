@@ -1,6 +1,6 @@
 <?php
 
-  module_load_include('inc', 'gb_mail', 'gb_mail.template');
+  module_load_include('inc', 'gl_mail', 'gl_mail.template');
   
   /**
    * gb_maillist will look for the following:
@@ -109,7 +109,7 @@
       $params['headers'] = array();
       $params['objects'] = array('email' => $email, 'dispatcher' => $this);
       $lang = language_default();
-      $result = drupal_mail('gb_mail', $email->key, $email->to, $lang, 
+      $result = drupal_mail('gl_mail', $email->key, $email->to, $lang, 
           $params, $email->from);
       return $result['result'];
     }
@@ -143,7 +143,7 @@
   /**
    * Implements hook_mail()
    */
-  function gb_mail_mail($key, &$message, $params) {
+  function gl_mail_mail($key, &$message, $params) {
     $objects = $params['objects'];
     if (!empty($objects)) { // This is an e-mail we're dispatching
       $dispatcher = $objects['dispatcher'];
@@ -187,7 +187,7 @@
   /**
    * Implements hook_mail_alter()
    */
-  function gb_maill_mail_alter(&$message) {
+  function gl_maill_mail_alter(&$message) {
     //$message['send'] = FALSE;
   }
   
