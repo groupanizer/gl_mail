@@ -81,8 +81,14 @@
     /** isset for 'readonly' variables */
     public function __isset($property);
     
-    /** Empty consturctor */
-    public function __construct();
+    /** 
+     * Consturctor 
+     *
+     * @param string $key the key to use for this e-mail.
+     * @param array $tokens data to be passed to the template files which
+     *        are keyed by $key.
+     */
+    public function __construct($key, $tokens);
   }
 
   /**
@@ -98,8 +104,9 @@
      * 
      * @param string $sender the address of the sender of this e-mail.
      * @param string $bounces the address bounces and errors should go to.
+     * @param boolean $send whether or not to actually send the e-mail.
      */
-    public function __construct($sender, $bounces);
+    public function __construct($sender, $bounces, $send);
     
     /**
      * This method dispatches an email.
@@ -114,22 +121,10 @@
      * This method dispatches a group of email in batch.
      * 
      * @param array $emails an array of IEmail objects to dispatch.
+     * @param boolean $send whether to actually send the e-mail
      * 
      * @return an array of booleans
      */
     public function dispatch_batch(array $emails);
   }
-  
-  /**
-   * Intrerface to receive email
-   * 
-   * To be implemented by the mailing engine.
-   * 
-   * @api
-   */
-  interface IEmailNotifier {
-    public function register_for_push_notifications(
-        $routine, $params);
-  }
-  
   

@@ -8,7 +8,7 @@ function gl_mail_enable() {
   variable_set('mimemail_simple_address', TRUE);
   variable_set('mimemail_sitestyle', TRUE);
   variable_set('mimemail_textonly', FALSE);
-  variable_set('mimemail_format', 'filtered_html');
+  variable_set('mimemail_format', 'full_html');
   variable_set('mimemail_linkonly', 0);
   
   // Set the MailSystem for gb_mailllist

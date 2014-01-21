@@ -20,7 +20,8 @@
    */
   
   class EmailMimeEmail implements IMultipartMimeEmail {
-    protected $key, $body, $headers, $attachments, $plain, $alt_body;
+    protected $key, $tokens;
+    protected $body, $headers, $attachments, $plain, $alt_body;
     public $to, $from, $subject, $reply_to;
     
     public function set_paths($to, $from, $reply_to) {
@@ -74,8 +75,9 @@
       }
     }
     
-    public function __construct() {
-      $this->key = md5(microtime());
+    public function __construct($key, $tokens = NULL) {
+      $this->key = $key;
+      $this->tokens = $tokens;
     }
     
     public function get_headers() {
@@ -91,11 +93,12 @@
    * @api
    */
   class EmailDispatcher implements IEmailDispatcher {
-    public $sender, $bounces;
+    public $sender, $bounces, $send;
     
-    public function __construct($sender, $bounces) {
+    public function __construct($sender, $bounces, $send = TRUE) {
       $this->sender = $sender;
       $this->bounces = $bounces;
+      $this->send = $send;
     }
     /**
      * This method dispatches an email.
@@ -108,6 +111,7 @@
       $params = array();
       $params['headers'] = array();
       $params['objects'] = array('email' => $email, 'dispatcher' => $this);
+      $params['tokens'] = $email->tokens;
       $lang = language_default();
       $result = drupal_mail('gl_mail', $email->key, $email->to, $lang, 
           $params, $email->from);
@@ -129,18 +133,6 @@
   }
   
   /**
-   * Intrerface to receive email
-   * 
-   * To be implemented by the mailing engine.
-   * 
-   * @api
-   */
-  class EmailNotifier implements IEmailNotifier {
-    public function register_for_push_notifications(
-        $routine, $params){}
-  }
-  
-  /**
    * Implements hook_mail()
    */
   function gl_mail_mail($key, &$message, $params) {
@@ -148,6 +140,9 @@
     if (!empty($objects)) { // This is an e-mail we're dispatching
       $dispatcher = $objects['dispatcher'];
       $email = $objects['email'];
+      
+      // Allow altering before we copy the data
+      drupal_alter('email', $email);
       
       // Set some addtional headers
       $message['params']['headers']['Sender'] = $dispatcher->sender; 
@@ -180,16 +175,14 @@
       // Set email subect & body
       $message['body'] = $email->body;
       $message['subject'] = $email->subject;
-      $message['send'] = TRUE;
+      $message['send'] = $dispatcher->send;
     }
   }
 
   /**
    * Implements hook_mail_alter()
    */
-  function gl_maill_mail_alter(&$message) {
-    //$message['send'] = FALSE;
+  function gl_mail_mail_alter(&$message) {
+    //
   }
-  
-  
   
