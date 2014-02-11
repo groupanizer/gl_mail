@@ -1,16 +1,23 @@
 <?php
   
 /**
- * Implements hook_enable().
+ * Implements hook_install().
  */
-function gl_mail_enable() {
+function gl_mail_instsall() {
+
   // Set variables for MimeMail
   variable_set('mimemail_simple_address', TRUE);
   variable_set('mimemail_sitestyle', TRUE);
   variable_set('mimemail_textonly', FALSE);
-  variable_set('mimemail_format', 'full_html');
+  variable_set('mimemail_format', 'advanced'); // from g3core
   variable_set('mimemail_linkonly', 0);
   
+}
+
+/**
+ * Implements hook_enable().
+ */
+function gl_mail_enable() {
   // Set the MailSystem for gb_mailllist
   mailsystem_set(array('gl_mail' => 'MimeMailSystem'));
 }
