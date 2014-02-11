@@ -3,7 +3,7 @@
 /**
  * Implements hook_install().
  */
-function gl_mail_instsall() {
+function gl_mail_install() {
 
   // Set variables for MimeMail
   variable_set('mimemail_simple_address', TRUE);
