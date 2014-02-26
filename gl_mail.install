@@ -1,35 +1,33 @@
 <?php
   
-/**
- * Implements hook_install().
- */
-function gl_mail_install() {
-
-  // Set variables for MimeMail
-  variable_set('mimemail_simple_address', TRUE);
-  variable_set('mimemail_sitestyle', TRUE);
-  variable_set('mimemail_textonly', FALSE);
-  $formats = filter_formats();
-  if (array_key_exists('advanced', $formats)) {
-    variable_set('mimemail_format', 'advanced'); // from g3core
-  } else {
-    variable_set('mimemail_format', 'full_html');
+  /**
+   * Implements hook_install().
+   */
+  function gl_mail_install() {
+    // Set variables for MimeMail
+    variable_set('mimemail_simple_address', TRUE);
+    variable_set('mimemail_sitestyle', TRUE);
+    variable_set('mimemail_textonly', FALSE);
+    $formats = filter_formats();
+    if (array_key_exists('advanced', $formats)) {
+      variable_set('mimemail_format', 'advanced'); // from g3core
+    } else {
+      variable_set('mimemail_format', 'full_html');
+    }
+    variable_set('mimemail_linkonly', 0); 
   }
-  variable_set('mimemail_linkonly', 0);
   
-}
-
-/**
- * Implements hook_enable().
- */
-function gl_mail_enable() {
-  // Set the MailSystem for gb_mailllist
-  mailsystem_set(array('gl_mail' => 'MimeMailSystem'));
-}
-
-/**
- * Implements hook_disable().
- */
-function gl_mail_disable() {
-  mailsystem_clear(array('gl_mail' => 'MimeMailSystem'));
-}
+  /**
+   * Implements hook_enable().
+   */
+  function gl_mail_enable() {
+    // Set the MailSystem for gb_mailllist
+    mailsystem_set(array('gl_mail' => 'MimeMailSystem'));
+  }
+  
+  /**
+   * Implements hook_disable().
+   */
+  function gl_mail_disable() {
+    mailsystem_clear(array('gl_mail' => 'MimeMailSystem'));
+  }
