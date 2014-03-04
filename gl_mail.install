@@ -6,7 +6,7 @@
   function gl_mail_install() {
     // Set variables for MimeMail
     variable_set('mimemail_simple_address', TRUE);
-    variable_set('mimemail_sitestyle', TRUE);
+    variable_set('mimemail_sitestyle', FALSE);
     variable_set('mimemail_textonly', FALSE);
     $formats = filter_formats();
     if (array_key_exists('advanced', $formats)) {
