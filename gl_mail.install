@@ -23,11 +23,14 @@
   function gl_mail_enable() {
     // Set the MailSystem for gb_mailllist
     mailsystem_set(array('gl_mail' => 'MimeMailSystem'));
+    // Set default MailSystem
+    mailsystem_set(array(mailsystem_default_id() => 'MimeMailSystem'));
   }
   
   /**
    * Implements hook_disable().
    */
   function gl_mail_disable() {
-    mailsystem_clear(array('gl_mail' => 'MimeMailSystem'));
+    mailsystem_clear(array('gl_mail' => ''));
+    mailsystem_set(mailsystem_defaults());
   }
