@@ -15,6 +15,8 @@
       variable_set('mimemail_format', 'full_html');
     }
     variable_set('mimemail_linkonly', 0); 
+    // Set theme variable for MailSystem
+    variable_set('mailsystem_theme', 'gtheme4');
   }
   
   /**
