@@ -4,5 +4,6 @@ package = Groupanizer Basic Group
 core = 7.x
 version = 7.x-1.0-beta1
 files[] = gl_mail.module
+dependencies[] = g3core
 dependencies[] = mimemail
 dependencies[] = mailsystem
