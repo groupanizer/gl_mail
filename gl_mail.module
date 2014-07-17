@@ -193,7 +193,9 @@
    * Implements hook_mail_alter()
    */
   function gl_mail_mail_alter(&$message) {
-    //
+    if (variable_get('gl_mail_logging_enabled', FALSE)) {
+      watchdog('gl_mail', 'Outgoing e-mail: ' . print_r($message, TRUE)); 
+    }
   }
   
   /**
@@ -237,11 +239,11 @@
         '#description' => t('If set the site will not receive outside mail'),
         '#default_value' => variable_get('gl_mail_incoming_disabled'),
       ),
-      'gl_mail_enable_logging' => array(
+      'gl_mail_logging_enabled' => array(
         '#type' => 'checkbox',
         '#title' => t('Enable logging'),
         '#description' => t('If set the site will log all e-mail traffic'),
-        '#default_value' => variable_get('gl_mail_enable_logging'),
+        '#default_value' => variable_get('gl_mail_logging_enabled'),
       ),
     );
     

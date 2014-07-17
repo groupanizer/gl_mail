@@ -24,7 +24,7 @@
   function gl_mail_uninstall() {
     variable_del('gl_mail_incoming_disabled');
     variable_del('gl_mail_outgoing_disabled');
-    variable_del('gl_mail_logging_disabled');
+    variable_del('gl_mail_logging_enabled');
   }
   
   /**
@@ -65,5 +65,3 @@
     return $permissions;
   }
   
-  
-  // TODO OUTGOING VARIAVLE DEL FROM GB AND ADD TO GL

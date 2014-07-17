@@ -84,6 +84,9 @@
     $email = mimemail_parse($email);                // parse e-mail into array
     // $email['html'] = _parse_email_for_body($email); // re-parse to fix bugs
     
+    $log = variable_get('gl_mail_logging_enabled', FALSE);
+    if ($log) { watchdog('gl_mail', 'Incoming e-mail: ' . print_r($email, TRUE)); }
+    
     // Send to registered mail handlers
     $hook = 'incoming_mail';
     foreach (module_implements($hook) as $module) {
@@ -98,12 +101,15 @@
           continue; // doesn't handle this e-mail or just made modifications
           break;
         case MAIL_ERROR_USER_NOT_FOUND:
+          if ($log) { watchdog('gl_mail', 'Error: User not found'); }
           exit(EX_NOUSER);
           break;
         case MAIL_ERROR_PERMISSION_DENIED:
+          if ($log) { watchdog('gl_mail', 'Error: Permission denied'); }
           exit(EX_NOPERM);
           break;
         case MAIL_ERROR_SOFTWARE:
+          if ($log) { watchdog('gl_mail', 'Error: Software error'); }
         default:
           exit(EX_SOFTWARE);
           break;
