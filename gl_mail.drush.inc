@@ -109,8 +109,8 @@
           exit(EX_NOPERM);
           break;
         case MAIL_ERROR_SOFTWARE:
-          if ($log) { watchdog('gl_mail', 'Error: Software error'); }
         default:
+          if ($log) { watchdog('gl_mail', 'Error: Software error'); }
           exit(EX_SOFTWARE);
           break;
         }
