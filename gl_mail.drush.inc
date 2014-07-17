@@ -71,6 +71,8 @@
   /** @todo check multi email */
   /** @todo send multi email, in spreadsheet/requirements*/
   function drush_gl_mail_incoming_mail() {
+    error_reporting(0); // Disable errors so they don't make it to bounces
+    
     if (variable_get('gl_mail_incoming_disabled', FALSE)) {
       exit(EX_UNAVAILABLE);
     }
