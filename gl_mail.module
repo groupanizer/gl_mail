@@ -203,7 +203,7 @@
    */
   function gl_mail_permission() {
     return array(
-      'administer e-mail' => array(
+      'administer email settings' => array(
         'title' => t('Administer e-mail settings'),
       ),
     );
@@ -218,7 +218,7 @@
         'title' => t('E-mail'),
         'page callback' => 'drupal_get_form',
         'page arguments' => array('gl_mail_settings_form'),
-        'access arguments' => array('administer e-mail'),
+        'access arguments' => array('administer email settings'),
         'type' => MENU_NORMAL_ITEM,
       ),
     );

@@ -53,9 +53,9 @@
   function gl_mail_default_permissions() {
     $permissions = array();
   
-    // Exported permission: 'view forums'.
-    $permissions['administer e-mail'] = array(
-      'name' => 'administer e-mail',
+    // Exported permission: 'administer email settings'.
+    $permissions['administer email settings'] = array(
+      'name' => 'administer email settings',
       'roles' => array(
         'Site Admin' => 'Site Admin',
       ),
