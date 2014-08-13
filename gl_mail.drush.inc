@@ -77,22 +77,22 @@
       exit(EX_UNAVAILABLE);
     }
     
+    $raw = stream_get_contents(STDIN);  // read encoded raw e-mail
+    $raw = base64_decode($raw);         // decode e-mail
     module_load_include('inc', 'mimemail', 'includes/mimemail.incoming');
-    
-    $email = stream_get_contents(STDIN);            // read encoded raw e-mail
-    $email = base64_decode($email);                 // decode e-mail
-    $email = mimemail_parse($email);                // parse e-mail into array
+    $parsed = mimemail_parse($raw);     // parse e-mail into array
     // $email['html'] = _parse_email_for_body($email); // re-parse to fix bugs
+    //print_r($parsed);
     
     $log = variable_get('gl_mail_logging_enabled', FALSE);
-    if ($log) { watchdog('gl_mail', 'Incoming e-mail: ' . print_r($email, TRUE)); }
+    if ($log) { watchdog('gl_mail', 'Incoming e-mail: ' . print_r($parsed, TRUE)); }
     
     // Send to registered mail handlers
     $hook = 'incoming_mail';
     foreach (module_implements($hook) as $module) {
       $function = $module . '_' . $hook;
       if (function_exists($function)) {
-        $result = call_user_func_array($function, array(&$email));
+        $result = call_user_func_array($function, array(&$parsed, $raw));
         switch ($result) {
         case TRUE:
           return;   // handled
