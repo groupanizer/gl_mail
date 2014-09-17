@@ -215,8 +215,14 @@
       $options
     );
     
-    $headers = $signature->get_signed_headers($context['to'], 
-        $context['subject'], $context['body'], $headers) .  $headers;
+    dpm($headers);
+    
+    $dkim_headers = $signature->get_signed_headers($context['to'], 
+        $context['subject'], $context['body'], $headers);
+        
+     dpm($dkim_headers);
+     
+     $headers = $dkim_headers . $headers;        
   }
 
   
