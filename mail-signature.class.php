@@ -163,9 +163,8 @@ class mail_signature {
 		$sHeaders = preg_replace("/\n\s+/", " ", $sHeaders);
 		
 		$lines = explode("\r\n", $sHeaders);
-    dpm("lines:");
+    dpm('lines');
     dpm($lines);
-		
 		foreach($lines as $key => $line){
 			
 			// delete multiple WSP
