@@ -193,6 +193,20 @@
     require_once('mail-signature.class.php');
     require_once('mail-signature.config.php');
     
+    $options = array(
+      'use_dkim' => true,
+      'use_domainKeys' => false,
+      'identity' => null,
+      'dkim_body_canonicalization' => 'relaxed',
+      'dk_canonicalization' => 'nofws',
+      'signed_headers' => array(
+        'mime-version',
+        'from',
+        'to',
+        'reply-to'
+      ),
+    );
+    
     $signature = new mail_signature(
       MAIL_RSA_PRIV,
       MAIL_RSA_PASSPHRASE,
