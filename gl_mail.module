@@ -211,7 +211,8 @@
       MAIL_RSA_PRIV,
       MAIL_RSA_PASSPHRASE,
       MAIL_DOMAIN,
-      MAIL_SELECTOR
+      MAIL_SELECTOR,
+      $options
     );
     
     $headers = $signature->get_signed_headers($context['to'], 
