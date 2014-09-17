@@ -394,7 +394,7 @@ class mail_signature {
 	
 	// you may leave $to and $subject empty if the corresponding headers are already in $headers
 	public function get_signed_headers($to, $subject, $body, $headers){
-		
+		dpm($headers);
 		$signed_headers = '';
 		
 		// prevent header injection
