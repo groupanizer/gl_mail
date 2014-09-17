@@ -10,6 +10,7 @@
     variable_set('mimemail_textonly', FALSE);
     variable_set('mimemail_format', 'advanced'); // from g3core
     variable_set('mimemail_linkonly', 0); 
+    variable_set('mimemail_crlf', "\r\n");
     // Set theme variable for MailSystem
     variable_set('mailsystem_theme', 'gtheme4');
   }

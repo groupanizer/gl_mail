@@ -186,3 +186,22 @@
     //
   }
   
+  /**
+   * Implements the fake hook_mail_headers_alter()
+   */
+  function gl_mail_mail_headers_alter(&$headers, &$context) {
+    require_once('mail-signature.class.php');
+    require_once('mail-signature.config.php');
+    
+    $signature = new mail_signature(
+      MAIL_RSA_PRIV,
+      MAIL_RSA_PASSPHRASE,
+      MAIL_DOMAIN,
+      MAIL_SELECTOR
+    );
+    
+    $headers = $signature->get_signed_headers($context['to'], 
+        $context['subject'], $context['body'], $headers) .  $headers;
+  }
+
+  
