@@ -411,6 +411,8 @@ class mail_signature {
 				if(!empty($to)) $headers .= 'To: '.$to."\r\n";
 				if(!empty($subject)) $headers .= 'Subject: '.$subject."\r\n";
 			}
+      
+      dpm($headers);
 			
 			// get the clean version of headers used for signature
 			$this -> canonicalized_headers_relaxed = $this -> _dkim_canonicalize_headers_relaxed($headers);
