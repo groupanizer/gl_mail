@@ -414,6 +414,7 @@ class mail_signature {
 			
 			// get the clean version of headers used for signature
 			$this -> canonicalized_headers_relaxed = $this -> _dkim_canonicalize_headers_relaxed($headers);
+      dpm($this -> canonicalized_headers_relaxed);
 			
 			if(!empty($this -> canonicalized_headers_relaxed)){
 				
@@ -424,6 +425,7 @@ class mail_signature {
 				
 				if($this -> options['use_dkim'] == true){
 					$signed_headers .= $this -> _get_dkim_header($body);
+          dpm($signed_headers);
 				}
 			}
 			else {

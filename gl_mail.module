@@ -203,7 +203,8 @@
         'mime-version',
         'from',
         'to',
-        'reply-to'
+        'subject',
+        'reply-to',
       ),
     );
     
@@ -215,14 +216,15 @@
       $options
     );
     
-    dpm($headers);
+    //dpm($context);
+    //dpm($headers);
     
     $dkim_headers = $signature->get_signed_headers($context['to'], 
         $context['subject'], $context['body'], $headers);
         
-     dpm($dkim_headers);
+    //dpm($dkim_headers);
      
-     $headers = $dkim_headers . $headers;        
+    $headers = $dkim_headers . $headers;        
   }
 
   
