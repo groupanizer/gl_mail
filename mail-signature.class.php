@@ -395,7 +395,7 @@ class mail_signature {
 	
 	// you may leave $to and $subject empty if the corresponding headers are already in $headers
 	public function get_signed_headers($to, $subject, $body, $headers){
-	  dpm("string headers:");
+	  dpm('string headers:');
 		dpm($headers);
 		$signed_headers = '';
 		
@@ -414,12 +414,12 @@ class mail_signature {
 				if(!empty($subject)) $headers .= 'Subject: '.$subject."\r\n";
 			}
       
-      dpm("string headers with subject and to concatenated:")
+      dpm('string headers with subject and to concatenated:');
       dpm($headers);
 			
 			// get the clean version of headers used for signature
 			$this -> canonicalized_headers_relaxed = $this -> _dkim_canonicalize_headers_relaxed($headers);
-      dpm("canoicalized headers:");
+      dpm('canoicalized headers:');
       dpm($this -> canonicalized_headers_relaxed);
 			
 			if(!empty($this -> canonicalized_headers_relaxed)){
@@ -431,7 +431,7 @@ class mail_signature {
 				
 				if($this -> options['use_dkim'] == true){
 					$signed_headers .= $this -> _get_dkim_header($body);
-          dpm("signed headers:");
+          dpm('signed headers:');
           dpm($signed_headers);
 				}
 			}
