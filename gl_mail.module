@@ -2,6 +2,10 @@
 
   module_load_include('inc', 'gl_mail', 'gl_mail.template');
   
+  define('MAIL_ERROR_SOFTWARE', 0);
+  define('MAIL_ERROR_USER_NOT_FOUND', 1);
+  define('MAIL_ERROR_PERMISSION_DENIED', 2);
+  
   /**
    * gb_maillist will look for the following:
    * 
