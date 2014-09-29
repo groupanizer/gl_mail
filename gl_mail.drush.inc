@@ -43,7 +43,7 @@
     $from = $email['headers']['From'];
     $reply_to = $email['headers']['Reply-To'];
     if (stristr($from, "@{$domain}") ||
-        stristr($reply_to, "@{$domain}"))
+        stristr($reply_to, "@{$domain}")) {
       return; // Don't bounce nor reply
     }
 
