@@ -33,8 +33,6 @@
   function drush_gl_mail_incoming_mail() {
     watchdog('gl_mail', 'called');
     
-    error_reporting(0); // Disable errors so they don't make it to bounces
-    
     $raw = stream_get_contents(STDIN);  // read encoded raw e-mail
     $raw = base64_decode($raw);         // decode e-mail
     module_load_include('inc', 'mimemail', 'includes/mimemail.incoming');
