@@ -31,6 +31,8 @@
   }
   
   function drush_gl_mail_incoming_mail() {
+    watchdog('gl_mail', 'called');
+    
     error_reporting(0); // Disable errors so they don't make it to bounces
     
     $raw = stream_get_contents(STDIN);  // read encoded raw e-mail
@@ -44,6 +46,7 @@
     $reply_to = $email['headers']['Reply-To'];
     if (stristr($from, "@{$domain}") ||
         stristr($reply_to, "@{$domain}")) {
+      watchdog('gl_mail', '1');
       return; // Don't bounce nor reply
     }
 
@@ -52,6 +55,8 @@
     foreach (module_implements($hook) as $module) {
       $function = $module . '_' . $hook;
       if (function_exists($function)) {
+        watchdog('gl_mail', '2');
+        
         $result = call_user_func_array($function, array(&$parsed, $raw));
         switch ($result) {
         case TRUE:
