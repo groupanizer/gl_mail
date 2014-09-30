@@ -26,7 +26,7 @@
   function gl_mail_drush_help($section) {
     switch ($section){
     case 'drush:incoming_mail':
-        return dt('Handles incoming mail. cat email | drush g3incoming');
+        return dt('Handles incoming mail. cat email | drush g3incomingmail');
     }
   }
   
