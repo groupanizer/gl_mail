@@ -26,11 +26,13 @@
   function gl_mail_drush_help($section) {
     switch ($section){
     case 'drush:incoming_mail':
-        return dt('Handles incoming mail. cat email | drush g3incomingmail');
+        return dt('Handles incoming mail.' . 
+            ' E-mail must be piped in and base64 encoded');
     }
   }
   
   function drush_gl_mail_incoming_mail() {
+    print("called");
     watchdog('gl_mail', 'called');
     
     $raw = stream_get_contents(STDIN);  // read encoded raw e-mail
