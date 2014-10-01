@@ -32,8 +32,9 @@
   }
   
   function drush_gl_mail_incoming_mail() {
-    print("called");
+    print("called\r\n");
     watchdog('gl_mail', 'called');
+    return;
     
     $raw = stream_get_contents(STDIN);  // read encoded raw e-mail
     $raw = base64_decode($raw);         // decode e-mail
