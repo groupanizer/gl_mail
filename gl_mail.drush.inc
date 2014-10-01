@@ -15,9 +15,9 @@
   /** Implements hook_drush_command */
   function gl_mail_drush_command() {
     return array(
-      'incoming_mail' => array(
+      'new_incoming_mail' => array(
         'description' => dt('Drush command for handling incoming mail'),
-        'aliases' => array('g3incomingmail'),
+        'aliases' => array('g3newincomingmail'),
       ),
     );
   }
@@ -25,13 +25,13 @@
   /** Implements hook_drush_help */
   function gl_mail_drush_help($section) {
     switch ($section){
-    case 'drush:incoming_mail':
+    case 'drush:new_incoming_mail':
         return dt('Handles incoming mail.' . 
             ' E-mail must be piped in and base64 encoded');
     }
   }
   
-  function drush_gl_mail_incoming_mail() {
+  function drush_gl_mail_new_incoming_mail() {
     print("called\r\n");
     watchdog('gl_mail', 'called');
     return;
