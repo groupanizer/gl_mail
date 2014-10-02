@@ -44,7 +44,20 @@
     print("Exception thrown '{$message}' on line {$linenum}");
   }
   
+  function assert_callback($file, $line, $message) {
+    print("assert_callback({$file}, {$line}, {$message})");
+  }
+  
+  function shutdown_function() {
+    $error = error_get_last();
+    
+    print("shutdown_function(), error_get_last() = {$error}");
+  }
+  
+  
   function drush_gl_mail_new_incoming_mail() {
+    assert_options(ASSERT_CALLBACK, 'assert_callback');
+    register_shutdown_function('shutdown_function');
     error_reporting(E_ALL | E_STRICT);
     set_error_handler('error_handler');
     set_exception_handler('exception_handler');
