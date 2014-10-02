@@ -31,7 +31,24 @@
     }
   }
   
+  function error_handler($errno, $error, $file, $line, $vars) {
+    print("error_handler({$errno}, {$error}, {$file}, {$line}, {$vars})");
+    
+    return true; // Don't execute internal PHP error handler
+  }
+
+  function exception_handler($e) {
+    $message = $e->getMessage();
+    $linenum = $e->getLine();
+
+    print("Exception thrown '{$message}' on line {$linenum}");
+  }
+  
   function drush_gl_mail_new_incoming_mail() {
+    error_reporting(E_ALL | E_STRICT);
+    set_error_handler('error_handler');
+    set_exception_handler('exception_handler');
+    
     print("called\r\n");
     watchdog('gl_mail', 'called');
     
