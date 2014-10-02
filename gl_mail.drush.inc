@@ -1,6 +1,7 @@
 <?php
   
-  module_load_include('inc', 'g3core', 'g3core.utils');
+  // module_load_include('inc', 'g3core', 'g3core.utils'); TODO: Why error in Drush???
+  require_once DRUPAL_ROOT . '/sites/all/modules/g3/g3core/g3core.utils.inc';
   
   /**
    * Implements hook_drush_command()
