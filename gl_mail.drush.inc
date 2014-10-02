@@ -63,7 +63,7 @@
     set_exception_handler('exception_handler');
     
     print("called\r\n");
-    watchdog('gl_mail', 'called');
+    return;
     
     /*
     return;
