@@ -10,6 +10,7 @@
       'handle_incoming_mail' => array(
         'description' => dt('Handles incoming mail. cat email | drush g3mail'),
         'aliases' => array('g3mail'),
+        'bootstrap' => DRUSH_BOOTSTRAP_MAX,
       ),
     );
   }
