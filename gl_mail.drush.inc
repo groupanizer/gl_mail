@@ -29,4 +29,5 @@
   /* Callback for handle_incoming_mail drush command */
   function drush_gl_mail_handle_incoming_mail() {
     print('WORKING');
+    watchdog('gl_mail', 'WORKING');
   }
