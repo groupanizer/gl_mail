@@ -1,7 +1,6 @@
 <?php
   
   // module_load_include('inc', 'g3core', 'g3core.utils'); TODO: Why error in Drush???
-  require_once DRUPAL_ROOT . '/sites/all/modules/g3/g3core/g3core.utils.inc';
   
   /**
    * Implements hook_drush_command()
@@ -9,9 +8,8 @@
   function gl_mail_drush_command() {
     return array(
       'handle_incoming_mail' => array(
-        'description' => dt('Handles incoming mail. cat email | drush g3mail'),
+        'description' => dt('Handles incoming mail.'),
         'aliases' => array('g3mail'),
-        'bootstrap' => DRUSH_BOOTSTRAP_MAX,
       ),
     );
   }
