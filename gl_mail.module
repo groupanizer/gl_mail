@@ -250,3 +250,40 @@
     return system_settings_form($form);
   }
   
+  /**
+   * Implements the fake hook_mail_headers_alter()
+   */
+  function gl_mail_mail_headers_alter(&$headers, &$context) {
+    require_once('mail-signature.class.php');
+    require_once('mail-signature.config.php');
+    
+    $options = array(
+      'use_dkim' => true,
+      'use_domainKeys' => false,
+      'identity' => null,
+      'dkim_body_canonicalization' => 'relaxed',
+      'dk_canonicalization' => 'nofws',
+      'signed_headers' => array(
+        'mime-version',
+        'from',
+        'to',
+        'subject',
+        'reply-to',
+      ),
+    );
+    
+    $signature = new mail_signature(
+      MAIL_RSA_PRIV,
+      MAIL_RSA_PASSPHRASE,
+      MAIL_DOMAIN,
+      MAIL_SELECTOR,
+      $options
+    );
+    
+    $dkim_headers = $signature->get_signed_headers($context['to'], 
+        $context['subject'], $context['body'], $headers);
+     
+    $headers = $dkim_headers . $headers;        
+  }
+
+  
