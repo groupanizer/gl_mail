@@ -1,6 +1,9 @@
 <?php
 
-  module_load_include('inc', 'gl_mail', 'gl_mail.template');
+  require_once('mail-signature.class.php');
+  require_once('mail-signature.config.php');
+    
+  module_load_include('inc', 'gb_mail', 'gb_mail.template');
   
   define('MAIL_ERROR_SOFTWARE', 0);
   define('MAIL_ERROR_USER_NOT_FOUND', 1);
@@ -139,7 +142,7 @@
   /**
    * Implements hook_mail()
    */
-  function gl_mail_mail($key, &$message, $params) {
+  function gb_mail_mail($key, &$message, $params) {
     $objects = $params['objects'];
     if (!empty($objects)) { // This is an e-mail we're dispatching
       $dispatcher = $objects['dispatcher'];
@@ -186,17 +189,14 @@
   /**
    * Implements hook_mail_alter()
    */
-  function gl_mail_mail_alter(&$message) {
+  function gb_mail_mail_alter(&$message) {
     //
   }
   
   /**
    * Implements the fake hook_mail_headers_alter()
    */
-  function gl_mail_mail_headers_alter(&$headers, &$context) {
-    require_once('mail-signature.class.php');
-    require_once('mail-signature.config.php');
-    
+  function gb_mail_mail_headers_alter(&$headers, &$context) {
     $options = array(
       'use_dkim' => true,
       'use_domainKeys' => false,
