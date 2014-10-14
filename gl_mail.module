@@ -2,6 +2,10 @@
 
   module_load_include('inc', 'gl_mail', 'gl_mail.template');
   
+  define('MAIL_ERROR_SOFTWARE', 0);
+  define('MAIL_ERROR_USER_NOT_FOUND', 1);
+  define('MAIL_ERROR_PERMISSION_DENIED', 2);
+  
   /**
    * gb_maillist will look for the following:
    * 
@@ -98,8 +102,14 @@
     public function __construct($sender, $bounces, $send = TRUE) {
       $this->sender = $sender;
       $this->bounces = $bounces;
-      $this->send = $send;
+      // Hard override to disable sending
+      if (variable_get('gl_mail_outgoing_disabled', FALSE)) {
+        $this->send = FALSE;
+      } else {
+        $this->send = $send;
+      }
     }
+    
     /**
      * This method dispatches an email.
      * 
@@ -183,7 +193,61 @@
    * Implements hook_mail_alter()
    */
   function gl_mail_mail_alter(&$message) {
-    //
+    if (variable_get('gl_mail_logging_enabled', FALSE)) {
+      watchdog('gl_mail', 'Outgoing e-mail: ' . print_r($message, TRUE)); 
+    }
+  }
+  
+  /**
+   * Implements hook_permission()
+   */
+  function gl_mail_permission() {
+    return array(
+      'administer email settings' => array(
+        'title' => t('Administer e-mail settings'),
+      ),
+    );
+  }
+  
+  /**
+   * Implemenets hook_menu()
+   */
+  function gl_mail_menu() {
+    return array(
+      'admin/config/groupanizer/email' => array(
+        'title' => t('E-mail'),
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('gl_mail_settings_form'),
+        'access arguments' => array('administer email settings'),
+        'type' => MENU_NORMAL_ITEM,
+      ),
+    );
+  }
+
+  /** Form callback for notifications settings form */
+  function gl_mail_settings_form($form, &$form_state) {
+    $form = array(
+      'gl_mail_outgoing_disabled' => array(
+        '#type' => 'checkbox',
+        '#title' => t('Disable outgoing e-mail'),
+        '#description' => t('If set the discussion boards will not send mail'),
+        '#default_value' => variable_get('gl_mail_outgoing_disabled'),
+      ),
+      'gl_mail_incoming_disabled' => array(
+        '#type' => 'checkbox',
+        '#title' => t('Disable incoming e-mail'),
+        '#description' => t('If set the site will not receive outside mail'),
+        '#default_value' => variable_get('gl_mail_incoming_disabled'),
+      ),
+      'gl_mail_logging_enabled' => array(
+        '#type' => 'checkbox',
+        '#title' => t('Enable logging'),
+        '#description' => t('If set the site will log all e-mail traffic'),
+        '#default_value' => variable_get('gl_mail_logging_enabled'),
+      ),
+    );
+    
+    return system_settings_form($form);
   }
   
   /**
