@@ -8,7 +8,7 @@
     variable_set('mimemail_simple_address', TRUE);
     variable_set('mimemail_sitestyle', FALSE);
     variable_set('mimemail_textonly', FALSE);
-    variable_set('mimemail_format', 'advanced'); // from g3core
+    variable_set('mimemail_format', 'email_filter'); // from g3core
     variable_set('mimemail_linkonly', 0); 
     variable_set('mimemail_crlf', "\r\n");
     // Set theme variable for MailSystem
