@@ -13,19 +13,6 @@
     variable_set('mimemail_crlf', "\r\n");
     // Set theme variable for MailSystem
     variable_set('mailsystem_theme', 'gtheme4');
-    // Variables for mail configuration
-    variable_set('gl_mail_incoming_disabled', FALSE);
-    variable_set('gl_mail_outgoing_disabled', FALSE);
-    variable_set('gl_mail_logging_enabled', FALSE);
-  }
-  
-  /**
-   * Implements hook_uninstall().
-   */
-  function gl_mail_uninstall() {
-    variable_del('gl_mail_incoming_disabled');
-    variable_del('gl_mail_outgoing_disabled');
-    variable_del('gl_mail_logging_enabled');
   }
   
   /**
@@ -47,22 +34,3 @@
     mailsystem_clear(array('g3core' => ''));
     mailsystem_set(mailsystem_defaults());
   }
-
-  /**
-   * Implements hook_default_permissions()
-   */
-  function gl_mail_default_permissions() {
-    $permissions = array();
-  
-    // Exported permission: 'administer email settings'.
-    $permissions['administer email settings'] = array(
-      'name' => 'administer email settings',
-      'roles' => array(
-        'Site Admin' => 'Site Admin',
-      ),
-      'module' => 'gl_mail',
-    );
-  
-    return $permissions;
-  }
-  
