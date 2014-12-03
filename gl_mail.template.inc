@@ -85,10 +85,10 @@
      * Consturctor 
      *
      * @param string $key the key to use for this e-mail.
-     * @param array $tokens data to be passed to the template files which
+     * @param array $variables data to be passed to the template files which
      *        are keyed by $key.
      */
-    public function __construct($key, $tokens);
+    public function __construct($key, $variables);
   }
 
   /**

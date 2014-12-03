@@ -20,7 +20,7 @@
    */
   
   class EmailMimeEmail implements IMultipartMimeEmail {
-    protected $key, $tokens;
+    protected $key, $variables;
     protected $body, $headers, $attachments, $plain, $alt_body;
     public $to, $from, $subject, $reply_to;
     
@@ -81,9 +81,9 @@
       }
     }
     
-    public function __construct($key, $tokens = NULL) {
+    public function __construct($key, $variables = array()) {
       $this->key = $key;
-      $this->tokens = $tokens;
+      $this->variables = $variables;
     }
     
     public function get_headers() {
@@ -117,7 +117,7 @@
       $params = array();
       $params['headers'] = array();
       $params['objects'] = array('email' => $email, 'dispatcher' => $this);
-      $params['tokens'] = $email->tokens;
+      $params['additional variables'] = $email->variables;
       $lang = language_default();
       $result = drupal_mail('gl_mail', $email->key, $email->to, $lang, 
           $params, $email->from);
