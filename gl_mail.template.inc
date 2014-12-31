@@ -1,26 +1,40 @@
 <?php
 
   /**
-   * Guidelines for the email engine that gb_maillist (and others) will use
+   * Guidelines for the e-mail engine that gb_maillist (and others) will use
    */
    
   /**
-   * Interface to define a standard email (not mime)
+   * Interface to define a standard e-mail (not mime)
    * 
    * @todo will we ever need this?
    * 
    * @api
    */
-  interface IEmail {}
-  
-  /**
-   * Interface to generate and represent a multipart mime email.
-   * 
-   * To be implemeneted by the mailing engine.
-   * 
-   * @api
-   */
-  interface IMultipartMimeEmail extends IEmail {    
+  interface IEmail {
+    /** 
+     * Consturctor 
+     *
+     * @param string $key the key to use for this e-mail.
+     * @param array $variables data to be passed to the template files which
+     *        are keyed by $key.
+     */
+    public function __construct($key, $variables);
+    
+    /** getter for 'readonly' variables */
+    public function __get($property);
+    
+    /** isset for 'readonly' variables */
+    public function __isset($property);
+    
+    /**
+     * This method adds a header to the e-mail.
+     * 
+     * @param string $header the header to set.
+     * @param string $value the value to set the header to.
+     */
+    public function add_header($header, $value);
+    
     /**
      * This method sets the paths for the e-mail.
      * 
@@ -38,34 +52,27 @@
     public function set_subject($subject);
     
     /**
-     * This method sets the main body of the e-mail. HTML & Plaintext.
+     * This method adds the body to the e-mail.
      * 
      * @param string $body the body of the e-mail.
-     * @param boolean $plain is the body plaintext?
      */
-    public function set_main_body($body, $plain);
-    
+    public function set_body($body);
+  }
+  
+  /**
+   * Interface to generate and represent a multipart mime e-mail.
+   * 
+   * To be implemeneted by the mailing engine.
+   * 
+   * @api
+   */
+  interface IMultipartMimeEmail extends IEmail {    
     /**
-     * This method adds an alternative text mime part to the e-mail.
-     * 
-     * @param string $body the alternative text body.
+     * This method sets the alt plaintext body of the e-mail.
+     *  
+     * @param string $body the alt plaintext body of the e-mail.
      */
-    public function set_alt_body($alt_body);
-    
-    /**
-     * This method adds an additional body to the body array
-     * 
-     * @param string $body the body to add.
-     */
-    public function add_additional_body($body); 
-    
-    /**
-     * This method adds a header to the e-mail.
-     * 
-     * @param string $header the header to set.
-     * @param string $value the value to set the header to.
-     */
-    public function add_header($header, $value);
+    public function set_alt_body($body);
     
     /**
      * This method adds an attachment to the e-mail.
@@ -74,25 +81,10 @@
      * @param string $filemime the file's mimetype, e.g. application/pdf
      */
     public function add_attachment($filename, $filemime);
-    
-    /** getter for 'readonly' variables */
-    public function __get($property);
-    
-    /** isset for 'readonly' variables */
-    public function __isset($property);
-    
-    /** 
-     * Consturctor 
-     *
-     * @param string $key the key to use for this e-mail.
-     * @param array $variables data to be passed to the template files which
-     *        are keyed by $key.
-     */
-    public function __construct($key, $variables);
   }
 
   /**
-   * Interface to dispatch (send) email.
+   * Interface to dispatch (send) e-mail.
    * 
    * To be implementing by the mailing engine.
    * 
@@ -104,27 +96,28 @@
      * 
      * @param string $sender the address of the sender of this e-mail.
      * @param string $bounces the address bounces and errors should go to.
-     * @param boolean $send whether or not to actually send the e-mail.
+     * @param string $finished a callback to receieve the results of dispatching
+     * @param string $file the file the finished callback resides in
      */
-    public function __construct($sender, $bounces, $send);
+    public function __construct($sender, $bounces, $finished, $file);
     
     /**
-     * This method dispatches an email.
+     * This method dispatches an e-mail.
      * 
-     * @param IEmail $email the email to dispatch
+     * @param IEmail $email the e-mail to dispatch
      * 
      * @return boolean
      */
     public function dispatch(IEmail $email);
     
     /**
-     * This method dispatches a group of email in batch.
+     * This method dispatches a group of e-mail (in batch if necessary).
      * 
      * @param array $emails an array of IEmail objects to dispatch.
-     * @param boolean $send whether to actually send the e-mail
+     * @param boolean $batch whether or not to dispatch in the background
      * 
-     * @return an array of booleans
+     * @return nothing
      */
-    public function dispatch_batch(array $emails);
+    public function dispatch_multiple(array $emails, $background);
   }
   

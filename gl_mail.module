@@ -21,46 +21,14 @@
   
   class EmailMimeEmail implements IMultipartMimeEmail {
     protected $key, $variables;
-    protected $body, $headers, $attachments, $plain, $alt_body;
+    protected $headers, $body;
+    protected $alt_body = NULL;
+    protected $attachments = NULL;
     public $to, $from, $subject, $reply_to;
     
-    public function set_paths($to, $from, $reply_to) {
-      $this->to = $to;
-      $this->from = $from;
-      $this->reply_to = $reply_to;
-    }
-        
-    public function set_subject($subject) {
-      $this->subject = $subject;
-    }
-    
-    public function set_main_body($body, $plain) {
-      $this->plain = $plain;
-      $this->body[] = $body;
-    }
-    
-    public function set_alt_body($alt_body) {
-      $this->alt_body = $alt_body;
-    }
-    
-    public function add_additional_body($body) {
-      $this->body[] = $body;
-    }
-    
-    public function add_header($header, $value) {
-      $this->headers[$header] = $value;
-    }
-
-    public function add_attachment($filename, $filemime) {
-      if (!is_readable($filename)) {
-        throw new Exception("file {$path} is not accessable / readable");
-      }
-      
-      $this->attachments[] = array(
-        'filecontent' => file_get_contents($filename),
-        'filename' => basename($filename),
-        'filemime' => $filemime,
-      );
+    public function __construct($key, $variables = array()) {
+      $this->key = $key;
+      $this->variables = $variables;
     }
     
     public function __get($property) {
@@ -81,9 +49,38 @@
       }
     }
     
-    public function __construct($key, $variables = array()) {
-      $this->key = $key;
-      $this->variables = $variables;
+    public function add_header($header, $value) {
+      $this->headers[$header] = $value;
+    }
+    
+    public function set_paths($to, $from, $reply_to) {
+      $this->to = $to;
+      $this->from = $from;
+      $this->reply_to = $reply_to;
+    }
+        
+    public function set_subject($subject) {
+      $this->subject = $subject;
+    }
+    
+    public function set_body($body) {
+      $this->body[] = $body;
+    }
+    
+    public function set_alt_body($body) {
+      $this->alt_body = $body;
+    }
+
+    public function add_attachment($filename, $filemime) {
+      if (!is_readable($filename)) {
+        throw new Exception("file {$path} is not accessable / readable");
+      }
+      
+      $this->attachments[] = array(
+        'filecontent' => file_get_contents($filename),
+        'filename' => basename($filename),
+        'filemime' => $filemime,
+      );
     }
     
     public function get_headers() {
@@ -99,17 +96,134 @@
    * @api
    */
   class EmailDispatcher implements IEmailDispatcher {
-    public $sender, $bounces, $send;
+    const BATCH_THRESHOLD = 10; // Number of e-mail before batching
     
-    public function __construct($sender, $bounces, $send = TRUE) {
+    public $sender, $bounces, $finished, $file;
+    
+    public function __construct($sender, $bounces, 
+        $finished = NULL, $file = NULL) {
       $this->sender = $sender;
       $this->bounces = $bounces;
-      $this->send = $send;
+      $this->finished = $finished;
+      $this->file = $file;
     }
+        
+    /* Insert ourselves into the drush procesing queue */
+    private function insert_into_drush_queue() {
+      module_load_include('inc', 'g3core', 'g3core.utils');
+      module_load_include('inc', 'gl_mail', 'gl_mail.credentials');
+      
+      $mysqli = new mysqli(SQL_HOSTNAME, SQL_USERNAME, 
+          SQL_PASSWORD, SQL_DATABASE);
+      if ($mysqli->connect_errno) {
+        watchdog('gl_mail', 'Failed to connect to @database', 
+            array('@database' => SQL_DATABASE), WATCHDOG_ERROR);
+        return FALSE;
+      }
+      
+      $stmt = $mysqli->prepare('INSERT INTO drush_queue (domain) VALUES (?)');
+      if (!$stmt) {
+        watchdog('gl_mail', 'Failed to prepare statement', 
+            array(), WATCHDOG_ERROR);
+        
+        $mysqli->close();
+        return FALSE;
+      }
+      
+      $domain = g3core_get_domain();
+      $stmt->bind_param('s', $domain);
+      
+      if (!$stmt->execute()) {
+        watchdog('gl_mail', 'Failed to INSERT into queue', 
+            array(), WATCHDOG_ERROR);
+        
+        $stmt->close();
+        $mysqli->close();
+        return FALSE;
+      }
+      
+      $stmt->close();
+      $mysqli->close(); 
+     
+      return TRUE;
+    }
+
+    /* Dispatch using the batch API */
+    private function dispatch_multiple_batch(array $emails) {
+      // Construct operations in groups of BATCH_THRESHOLD as we know
+      // that many can be safely sent 'now'
+      $operations = array();
+      $offset = 0;
+      $total = count($emails);
+      while ($total > 0) {
+        $slice = array_slice($emails, $offset, self::BATCH_THRESHOLD);
+        $operations[] = array('_gl_mail_dispatch', 
+            array($this, $slice));
+                      
+        $total -= self::BATCH_THRESHOLD;
+        $offset += self::BATCH_THRESHOLD;
+      }
+
+      $batch = array(
+        'title' => t('Dispatching e-mail...'),
+        'init_message' => t('Sending e-mail.'),
+        'progress_message' => t('Processed @current out of @total.'),
+        'error_message' => t('An error occurred during processing.'),
+        'operations' => $operations,
+        'finished' => '_gl_mail_dispatch_finished',
+        'file' => drupal_get_path('module', 'gl_mail') . '/gl_mail.batch.inc',
+      );
+      
+      batch_set($batch);
+    }
+   
+    /* Send the e-mail right now */
+    private function dispatch_multiple_now(array $emails) {
+      $drush = drupal_is_cli() && function_exists('drush_main');
+      $count = count($emails);
+      if ($count > self::BATCH_THRESHOLD && !$drush) {  // dispatch with batch
+        $this->dispatch_multiple_batch($emails);
+      } else {                                          // dispatch directly
+        $results = array_map(function ($email) {
+          $result = self::dispatch($email);
+          return array('email' => $email, 'result' => $result);
+        }, $emails);
+        
+        // Call the finished callback if it is present
+        if ($this->file) {
+          require_once $this->file;
+        }
+
+        if ($this->finished) {
+          call_user_func($this->finished, $results);
+        }
+      }
+    }
+
+    /* Store the e-mail to send later */
+    private function dispatch_multiple_later(array $emails) {
+      // Write the batch records
+      $record = array(
+        'data' => serialize($this),
+      );
+      drupal_write_record('gl_mail_batch', $record);
+      $bid = $record['bid'];
+      
+      // Write the jobs
+      $query = db_insert('gl_mail_job')->fields(array('bid', 'data'));
+      foreach ($emails as $email) {
+        $query->values(array('bid' => $bid, 'data' => serialize($email)));
+      }
+      $query->execute();
+      
+      // Insert ourselves into the dursh processing queue
+      $this->insert_into_drush_queue();
+    }
+    
     /**
-     * This method dispatches an email.
+     * This method dispatches an e-mail.
      * 
-     * @param IEmail $email the email to dispatch
+     * @param IEmail $email the e-mail to dispatch
      * 
      * @return boolean
      */
@@ -125,19 +239,23 @@
     }
     
     /**
-     * This method dispatches a batch (array) of emails.
+     * This method dispatches a group of email (in batch if necessary).
      * 
      * @param array $emails an array of IEmail objects to dispatch.
+     * @param string $finished a callback to receive the results of dispatching
+     * @param boolean $background whether or not to dispatch in the background
      * 
-     * @return an array of booleans
+     * @return nothing
      */
-    public function dispatch_batch(array $emails) {
-      return array_map(function ($email) {
-        return self::dispatch($email);
-      }, $emails);
+    public function dispatch_multiple(array $emails, $background = FALSE) { 
+      if ($background) { // store e-mail to be dispatched later
+        $this->dispatch_multiple_later($emails);
+      } else {           // dispatch it now
+        $this->dispatch_multiple_now($emails);
+      }
     }
   }
-  
+
   /**
    * Implements hook_mail()
    */
@@ -161,27 +279,28 @@
             $message['params']['headers'], $email->headers);
       }
       
-      // Is this message plaintext only?
-      if ($email->plain) {
-        $message['params']['plain'] = TRUE;
-      }
-      
+      $message['subject'] = $email->subject;
+      $message['body'] = $email->body;
+        
       // If set provide an alternative plaintext body
-      if (!is_null($email->alt_body) && !$email->plain) {
+      if (isset($email->alt_body)) {
         // plaintext body seems to override message['body'] if we're
         // sending a plain text email (message['params']['plaintext'])
         $message['params']['plaintext'] = $email->alt_body;
       }
       
       // If set provide our array of attachment descriptors
-      if (!is_null($email->attachments)) {
+      if (isset($email->attachments)) {
         $message['params']['attachments'] = $email->attachments;
       }
       
-      // Set email subect & body
-      $message['body'] = $email->body;
-      $message['subject'] = $email->subject;
-      $message['send'] = $dispatcher->send;
+      /*
+      if ($plain)
+        $message['params']['plain'] = TRUE; // if set, mimemail treats as plain
+        $message['body'] = ??
+      }*/
+      
+      $message['send'] = TRUE;
     }
   }
 
@@ -227,5 +346,4 @@
      
     $headers = $dkim_headers . $headers;        
   }
-
   
