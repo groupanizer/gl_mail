@@ -34,3 +34,96 @@
     mailsystem_clear(array('g3core' => ''));
     mailsystem_set(mailsystem_defaults());
   }
+  
+  /**
+   * Implements hook_schema()
+   */
+  function gl_mail_schema() {    
+    return array(
+      'gl_mail_batch' => array(
+        'description' => t('A queue of outgoing e-mail batches'),
+        'fields' => array(
+          'bid' => array(
+            'description' => t('Unique id for this batch'),
+            'type' => 'serial',
+            'size' => 'normal',
+            'unsigned' => TRUE,
+            'not null' => TRUE,
+          ),
+          'data' => array(
+            'description' => t('The dispatcher object'),
+            'type' => 'blob',
+            'size' => 'normal',
+            'not null' => TRUE,
+          ),
+        ), // fields
+        'primary key' => array('bid',),
+      ), // gl_mail_batch
+      'gl_mail_job' => array(
+        'description' => t('E-mail jobs that belong to a batch'),
+        'fields' => array(
+          'bid' => array(
+            'description' => t('The batch id that this job belongs to'),
+            'type' => 'int',
+            'size' => 'normal',
+            'unsigned' => TRUE,
+            'not null' => TRUE,
+          ),
+          'data' => array(
+            'description' => t('The e-mail object'),
+            'type' => 'blob',
+            'size' => 'normal',
+            'not null' => TRUE,
+          ),
+        ), // fields
+      ), // gl_mail_job
+    );
+  }
+  
+  /**
+   * Create tables {gl_mail_batch} and {gl_mail_job}
+   */
+  function gl_mail_update_7102() {
+    $schema = array(
+      'gl_mail_batch' => array(
+        'description' => t('A queue of outgoing e-mail batches'),
+        'fields' => array(
+          'bid' => array(
+            'description' => t('Unique id for this batch'),
+            'type' => 'serial',
+            'size' => 'normal',
+            'unsigned' => TRUE,
+            'not null' => TRUE,
+          ),
+          'data' => array(
+            'description' => t('The dispatcher object'),
+            'type' => 'blob',
+            'size' => 'normal',
+            'not null' => TRUE,
+          ),
+        ), // fields
+        'primary key' => array('bid',),
+      ), // gl_mail_batch
+      'gl_mail_job' => array(
+        'description' => t('E-mail jobs that belong to a batch'),
+        'fields' => array(
+          'bid' => array(
+            'description' => t('The batch id that this job belongs to'),
+            'type' => 'int',
+            'size' => 'normal',
+            'unsigned' => TRUE,
+            'not null' => TRUE,
+          ),
+          'data' => array(
+            'description' => t('The e-mail object'),
+            'type' => 'blob',
+            'size' => 'normal',
+            'not null' => TRUE,
+          ),
+        ), // fields
+      ), // gl_mail_job
+    );
+    
+    db_create_table('gl_mail_batch', $schema['gl_mail_batch']);
+    db_create_table('gl_mail_job', $schema['gl_mail_job']);
+  }
