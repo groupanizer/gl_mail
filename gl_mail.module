@@ -202,22 +202,28 @@
 
     /* Store the e-mail to send later */
     private function dispatch_multiple_later(array $emails) {
-      // Write the batch records
-      $record = array(
-        'data' => serialize($this),
-      );
-      drupal_write_record('gl_mail_batch', $record);
-      $bid = $record['bid'];
+      try {
+        // Write the batch records
+        $record = array(
+          'data' => serialize($this),
+        );
+        drupal_write_record('gl_mail_batch', $record);
+        $bid = $record['bid'];
+        
+        // Write the jobs
+        $query = db_insert('gl_mail_job')->fields(array('bid', 'data'));
+        foreach ($emails as $email) {
+          $query->values(array('bid' => $bid, 'data' => serialize($email)));
+        }
+        $query->execute();
       
-      // Write the jobs
-      $query = db_insert('gl_mail_job')->fields(array('bid', 'data'));
-      foreach ($emails as $email) {
-        $query->values(array('bid' => $bid, 'data' => serialize($email)));
+        // Insert ourselves into the dursh processing queue
+        $this->insert_into_drush_queue();
+      } catch( Exception $e ) {
+        drupal_set_message("Trouble saving mail for sending. Please contact Groupanizer support.", 'error');
+        watchdog('gl_mail', "Error saving email for later sending. Exception: @msg",
+          array('@msg'=>$e->getMessage()));
       }
-      $query->execute();
-      
-      // Insert ourselves into the dursh processing queue
-      $this->insert_into_drush_queue();
     }
     
     /**
