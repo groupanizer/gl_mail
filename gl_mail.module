@@ -113,38 +113,35 @@
       module_load_include('inc', 'g3core', 'g3core.utils');
       module_load_include('inc', 'gl_mail', 'gl_mail.credentials');
       
-      $mysqli = new mysqli(SQL_HOSTNAME, SQL_USERNAME, 
-          SQL_PASSWORD, SQL_DATABASE);
-      if ($mysqli->connect_errno) {
-        watchdog('gl_mail', 'Failed to connect to @database', 
-            array('@database' => SQL_DATABASE), WATCHDOG_ERROR);
+      // define and create our new database connection
+      $dbkey = 'mailq';
+      $other_database = array(
+        'database' => SQL_DATABASE,
+        'username' => SQL_USERNAME,
+        'password' => SQL_PASSWORD,
+        'host' => SQL_HOSTNAME,
+        'driver' => 'mysql',
+      );
+      Database::addConnectionInfo($dbkey, 'default', $other_database);
+
+      try {
+
+        // switch to new database
+        db_set_active($dbkey);
+        // insert the domain into the queue
+        $result = db_query(
+         "INSERT INTO drush_queue (domain) VALUES (:domain)",
+          array(':domain'=>g3core_get_domain())
+        );
+
+      } catch( Exception $e ) {
+        watchdog('gl_mail', 'Error queueing domain for sending: @msg', 
+                 array('@msg'=>$e->getMessage()), WATCHDOG_ERROR);
         return FALSE;
       }
-      
-      $stmt = $mysqli->prepare('INSERT INTO drush_queue (domain) VALUES (?)');
-      if (!$stmt) {
-        watchdog('gl_mail', 'Failed to prepare statement', 
-            array(), WATCHDOG_ERROR);
-        
-        $mysqli->close();
-        return FALSE;
-      }
-      
-      $domain = g3core_get_domain();
-      $stmt->bind_param('s', $domain);
-      
-      if (!$stmt->execute()) {
-        watchdog('gl_mail', 'Failed to INSERT into queue', 
-            array(), WATCHDOG_ERROR);
-        
-        $stmt->close();
-        $mysqli->close();
-        return FALSE;
-      }
-      
-      $stmt->close();
-      $mysqli->close(); 
-     
+
+      db_set_active(); // back to our default database
+ 
       return TRUE;
     }
 
@@ -339,10 +336,14 @@
       ),
     );
     
+    // use the variables if they exist, or fall back to the groupanizer.com files
+    $private_key = variable_get('gl_mail_dkim_private_key', MAIL_RSA_PRIV);
+    $domain = g3core_get_domain();
+
     $signature = new mail_signature(
-      MAIL_RSA_PRIV,
+      $private_key,
       MAIL_RSA_PASSPHRASE,
-      MAIL_DOMAIN,
+      $domain,
       MAIL_SELECTOR,
       $options
     );
