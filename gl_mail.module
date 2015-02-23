@@ -111,38 +111,7 @@
     /* Insert ourselves into the drush procesing queue */
     private function insert_into_drush_queue() {
       module_load_include('inc', 'g3core', 'g3core.utils');
-      module_load_include('inc', 'gl_mail', 'gl_mail.credentials');
-      
-      // define and create our new database connection
-      $dbkey = 'mailq';
-      $other_database = array(
-        'database' => SQL_DATABASE,
-        'username' => SQL_USERNAME,
-        'password' => SQL_PASSWORD,
-        'host' => SQL_HOSTNAME,
-        'driver' => 'mysql',
-      );
-      Database::addConnectionInfo($dbkey, 'default', $other_database);
-
-      try {
-
-        // switch to new database
-        db_set_active($dbkey);
-        // insert the domain into the queue
-        $result = db_query(
-         "INSERT INTO drush_queue (domain) VALUES (:domain)",
-          array(':domain'=>g3core_get_domain())
-        );
-
-      } catch( Exception $e ) {
-        watchdog('gl_mail', 'Error queueing domain for sending: @msg', 
-                 array('@msg'=>$e->getMessage()), WATCHDOG_ERROR);
-        return FALSE;
-      }
-
-      db_set_active(); // back to our default database
- 
-      return TRUE;
+      g3core_request_background_job('g3outgoingmail');
     }
 
     /* Dispatch using the batch API */
@@ -206,6 +175,10 @@
       drupal_write_record('gl_mail_batch', $record);
       $bid = $record['bid'];
       
+// Are you kidding me??  We're writing each separate email into a table?
+// That's incredibly stupid.  Plus the data field holds a maximum of 64k,
+// meaning that basically no attachments can work.
+
       // Write the jobs
       $query = db_insert('gl_mail_job')->fields(array('bid', 'data'));
       foreach ($emails as $email) {
