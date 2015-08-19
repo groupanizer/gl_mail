@@ -96,7 +96,7 @@
    * @api
    */
   class EmailDispatcher implements IEmailDispatcher {
-    const BATCH_THRESHOLD = 10; // Number of e-mail before batching
+    const BATCH_THRESHOLD = 200; // Number of e-mail before batching
     
     public $sender, $bounces, $finished, $file;
     
