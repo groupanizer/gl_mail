@@ -12,7 +12,7 @@
     variable_set('mimemail_linkonly', 0); 
     variable_set('mimemail_crlf', "\r\n");
     // Set theme variable for MailSystem
-    variable_set('mailsystem_theme', 'gtheme4');
+    variable_set('mailsystem_theme', 'gtheme5');
   }
   
   /**
