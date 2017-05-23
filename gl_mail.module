@@ -209,8 +209,7 @@
       $params['objects'] = array('email' => $email, 'dispatcher' => $this);
       $params['additional variables'] = $email->variables;
       $lang = language_default();
-      $result = drupal_mail('gl_mail', $email->key, $email->to, $lang, 
-          $params, $email->from);
+      $result = drupal_mail('gl_mail', $email->key, $email->to, $lang, $params, $email->from);
       return $result['result'];
     }
     
@@ -224,11 +223,11 @@
      * @return nothing
      */
     public function dispatch_multiple(array $emails, $background = FALSE) { 
-      if ($background) { // store e-mail to be dispatched later
-        $this->dispatch_multiple_later($emails);
-      } else {           // dispatch it now
+      //if ($background) { // store e-mail to be dispatched later
+      //  $this->dispatch_multiple_later($emails);
+      //} else {           // dispatch it now
         $this->dispatch_multiple_now($emails);
-      }
+      //}
     }
   }
 
