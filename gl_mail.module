@@ -204,6 +204,7 @@
      * @return boolean
      */
     public function dispatch(IEmail $email) {
+
       $params = array();
       $params['headers'] = array();
       $params['objects'] = array('email' => $email, 'dispatcher' => $this);
@@ -246,6 +247,7 @@
       // Set some addtional headers
       $message['params']['headers']['Sender'] = $dispatcher->sender; 
       $message['params']['headers']['Return-Path'] = $dispatcher->bounces;
+      $message['params']['headers']['h:Reply-To'] = $dispatcher->bounces;
       $message['params']['headers']['Errors-To'] = $dispatcher->bounces;
       $message['params']['headers']['Reply-To'] = $email->reply_to;
       
